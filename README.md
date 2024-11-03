@@ -23,7 +23,7 @@ xVision is a plugin for the [JadX](https://github.com/skylot/jadx) decompiler th
 - JadX (CLI or GUI)
 - Java Development Kit (JDK) 11 or higher
 
-## Download the jar file from releases
+### Download the jar file from releases
 
 - [jadX-xVision Plugin v0.0.1](https://github.com/samanl33t/jadx-xvision-plugin/releases/download/v0.0.1/jadx-xvision-plugin_v0.0.1.jar)
 
