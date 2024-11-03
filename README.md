@@ -1,6 +1,6 @@
 ![](screenshots/name.png "xVision Plugin")
 
-# xVision Plugin
+# jadX xVision Plugin
 
 xVision is a plugin for the [JadX](https://github.com/skylot/jadx) decompiler that aims to integrate with Large Language Models (LLMs) to provide code analysis directly in the JAdX. This plugin allows you to analyze Java code for functionality, security issues, and notable patterns using LLMs like GPT-4, Claude or any custom local LLMs.
 
