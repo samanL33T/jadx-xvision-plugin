@@ -48,7 +48,7 @@ public class XVisionPluginTest {
             JadxPluginInfo info = plugin.getPluginInfo();
             assertThat(info.getPluginId()).isEqualTo("xvision-plugin");
             assertThat(info.getName()).isEqualTo("xVision Plugin");
-            assertThat(info.getDescription()).isEqualTo("LLM integration for code analysis");
+            assertThat(info.getDescription()).isEqualTo("xVision: LLM integration for code analysis");
         }
     }
 }

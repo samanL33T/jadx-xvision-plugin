@@ -11,12 +11,27 @@ plugins {
 }
 
 dependencies {
-    val jadxVersion = "1.5.1-SNAPSHOT"
+   val jadxVersion = "1.5.1-SNAPSHOT"
     val isJadxSnapshot = jadxVersion.endsWith("-SNAPSHOT")
 
-    compileOnly("io.github.skylot:jadx-core:$jadxVersion") {
-        isChanging = isJadxSnapshot
-    }
+//   compileOnly("io.github.skylot:jadx-core:$jadxVersion") {
+//        isChanging = isJadxSnapshot
+//   }
+	implementation("io.github.skylot:jadx-core:1.5.1-SNAPSHOT") {
+		isChanging = true
+	}
+	implementation("io.github.skylot:jadx-dex-input:1.5.1-SNAPSHOT") {
+		isChanging = true
+	}
+	implementation("io.github.skylot:jadx-java-input:1.5.1-SNAPSHOT") {
+		isChanging = true
+	}
+	implementation("io.github.skylot:jadx-smali-input:1.5.1-SNAPSHOT") {
+		isChanging = true
+	}
+	implementation("io.github.skylot:jadx-kotlin-metadata:1.5.1-SNAPSHOT") {
+		isChanging = true
+	}
 
     testImplementation("io.github.skylot:jadx-smali-input:$jadxVersion") {
         isChanging = isJadxSnapshot

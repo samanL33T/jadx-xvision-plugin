@@ -1,4 +1,8 @@
 package jadx.plugins.xvision;
+
+
+
+
 import jadx.api.JadxDecompiler;
 import jadx.api.JavaNode;
 import jadx.api.JavaClass;
@@ -26,13 +30,14 @@ import java.util.prefs.Preferences;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import jadx.plugins.xvision.config.ConfigWindow;
 
 public class XVisionPlugin implements JadxPlugin {
     private static final String PLUGIN_NAME = "xVision Plugin";
     private static final Map<String, String> LLM_ENDPOINTS = Map.of(
             "GPT-4", "https://api.openai.com/v1/chat/completions",
             "claud-sonnet-3-5", "https://api.anthropic.com/v1/messages",
-            "Your own LLM", ""
+            "Your own LLM", "" 
     );
 
     private static final String DEFAULT_PROMPT_TEMPLATE = """
@@ -44,7 +49,8 @@ public class XVisionPlugin implements JadxPlugin {
         Code:
         %s
         """;
-    private JadxPluginContext context;
+
+    private JadxPluginContext pluginContext;
     private JadxGuiContext guiContext;
     private String apiKey;
     private String selectedLLM;
@@ -55,14 +61,14 @@ public class XVisionPlugin implements JadxPlugin {
         return new JadxPluginInfo(
                 "xvision-plugin",
                 PLUGIN_NAME,
-                "LLM integration for code analysis",
-                "0.0.1"
+                "xVision: LLM integration for code analysis",
+                "0.1.0"
         );
     }
 
     @Override
     public void init(JadxPluginContext context) {
-        this.context = context;
+        this.pluginContext = context;
         if (context.getGuiContext() != null) {
             this.guiContext = context.getGuiContext();
             initializeGUIComponents();
@@ -70,39 +76,34 @@ public class XVisionPlugin implements JadxPlugin {
         context.registerOptions(getOptions());
     }
 
-    private String getCode(ICodeNodeRef node) {
-        JadxDecompiler decompiler = context.getDecompiler();
-        JavaNode javaNode = decompiler.getJavaNodeByRef(node);
-        if (javaNode instanceof JavaClass) {
-            return ((JavaClass) javaNode).getCode();
-        } else if (javaNode instanceof JavaMethod) {
-            JavaMethod javaMethod = (JavaMethod) javaNode;
-            return javaMethod.getDeclaringClass().getCode();
+    public JadxPluginContext getContext() {
+        return pluginContext;
+    }
+
+    public void updatePreferences(String llmType, String apiKey) {
+        Preferences prefs = Preferences.userNodeForPackage(XVisionPlugin.class);
+        this.selectedLLM = llmType;
+        this.apiKey = apiKey;
+        prefs.put("llmType", llmType);
+        prefs.put("apiKey", apiKey);
+    }
+
+    public String getCode(JavaNode node) {
+        if (node instanceof JavaMethod) {
+            return ((JavaMethod) node).getCodeStr();
+        } else if (node instanceof JavaClass) {
+            return ((JavaClass) node).getCode();
         }
         return null;
     }
 
-
     private void initializeGUIComponents() {
-        guiContext.addMenuAction("Analyze with " + PLUGIN_NAME, () -> {
-            try {
-                // Get the current node and its code
-                ICodeNodeRef node = guiContext.getEnclosingNodeUnderCaret();
-                if (node != null) {
-                    String code = getCode(node);
-                    if (code != null && !code.isEmpty()) {
-                        analyzeCode(code);
-                    } else {
-                        showError("No code available in the selected node");
-                    }
-                } else {
-                    showError("Please place the cursor inside a code block to analyze");
-                }
-            } catch (Exception e) {
-                handleError("Failed to get code", e);
-            }
+        guiContext.addMenuAction("XVision configuration", () -> {
+            new ConfigWindow(this).show();
         });
+        XVisionContextMenuAction.addToContextMenu(guiContext, this);
     }
+
 
     public JadxPluginOptions getOptions() {
         return new JadxPluginOptions() {
@@ -146,11 +147,18 @@ public class XVisionPlugin implements JadxPlugin {
                 });
                 return options;
             }
+
             @Override
             public void setOptions(Map<String, String> options) {
-                selectedLLM = options.get("xvision-plugin.llmType");
-                customEndpoint = options.get("xvision-plugin.customEndpoint");
-                apiKey = options.get("xvision-plugin.apiKey");
+                Preferences prefs = Preferences.userNodeForPackage(XVisionPlugin.class);
+                selectedLLM = options.getOrDefault("xvision-plugin.llmType", prefs.get("llmType", "GPT-4"));
+                customEndpoint = options.getOrDefault("xvision-plugin.customEndpoint", prefs.get("customEndpoint", ""));
+                apiKey = options.getOrDefault("xvision-plugin.apiKey", prefs.get("apiKey", ""));
+                
+                // Save preferences
+                prefs.put("llmType", selectedLLM);
+                prefs.put("customEndpoint", customEndpoint);
+                prefs.put("apiKey", apiKey);
             }
         };
     }
@@ -212,7 +220,7 @@ public class XVisionPlugin implements JadxPlugin {
     }
 
 
-    private void analyzeCode(String code) {
+    public void analyzeCode(String code) {
         if (!validateConfiguration()) return;
         String prompt = showPromptDialog(code);
         if (prompt == null) return;
@@ -234,6 +242,7 @@ public class XVisionPlugin implements JadxPlugin {
         };
         worker.execute();
     }
+
 
 
     private String sendLLMRequest(String prompt) throws IOException, InterruptedException {
