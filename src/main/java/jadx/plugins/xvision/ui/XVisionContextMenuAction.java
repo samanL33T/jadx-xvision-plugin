@@ -1,12 +1,13 @@
 // Ref: https://github.com/Devilx86/jadx-ai-view-plugin/blob/main/src/main/java/jadx/plugins/aiview/JadxAiViewAction.java
 
-package jadx.plugins.xvision;
+package jadx.plugins.xvision.ui;
 
 import jadx.api.JavaNode;
 import jadx.api.metadata.ICodeNodeRef;
 import jadx.api.plugins.gui.JadxGuiContext;
 import java.util.function.Consumer;
 import jadx.api.metadata.ICodeAnnotation;
+import jadx.plugins.xvision.XVisionPlugin;
 
 public class XVisionContextMenuAction implements Consumer<ICodeNodeRef> {
     private final JadxGuiContext guiContext;

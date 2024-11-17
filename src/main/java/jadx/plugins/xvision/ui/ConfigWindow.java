@@ -11,7 +11,7 @@ public class ConfigWindow {
 
     public ConfigWindow(XVisionPlugin plugin) {
         this.plugin = plugin;
-        this.preferences = plugin.getPreferences();
+        this.preferences = Preferences.userNodeForPackage(XVisionPlugin.class);
     }
 
     public void show() {
