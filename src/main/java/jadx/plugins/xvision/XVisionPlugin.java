@@ -1,8 +1,5 @@
 package jadx.plugins.xvision;
 
-
-
-
 import jadx.api.JadxDecompiler;
 import jadx.api.JavaNode;
 import jadx.api.JavaClass;
@@ -31,6 +28,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import jadx.plugins.xvision.config.ConfigWindow;
+import jadx.plugins.xvision.llm.LLMCommunicator;
+import jadx.plugins.xvision.utils.XVisionConstants;
 
 public class XVisionPlugin implements JadxPlugin {
     private static final String PLUGIN_NAME = "xVision Plugin";
@@ -49,12 +48,13 @@ public class XVisionPlugin implements JadxPlugin {
         Code:
         %s
         """;
-
+    private LLMCommunicator llmCommunicator;
     private JadxPluginContext pluginContext;
     private JadxGuiContext guiContext;
     private String apiKey;
     private String selectedLLM;
     private String customEndpoint;
+    private final Preferences preferences = Preferences.userNodeForPackage(XVisionPlugin.class);
 
     @Override
     public JadxPluginInfo getPluginInfo() {
@@ -80,12 +80,19 @@ public class XVisionPlugin implements JadxPlugin {
         return pluginContext;
     }
 
-    public void updatePreferences(String llmType, String apiKey) {
-        Preferences prefs = Preferences.userNodeForPackage(XVisionPlugin.class);
-        this.selectedLLM = llmType;
+    public void updatePreferences(String selectedLLM, String apiKey, String customEndpoint) {
+        this.selectedLLM = selectedLLM;
         this.apiKey = apiKey;
-        prefs.put("llmType", llmType);
-        prefs.put("apiKey", apiKey);
+        this.customEndpoint = customEndpoint;
+
+        preferences.put(XVisionConstants.PREF_SELECTED_LLM, selectedLLM);
+        preferences.put(XVisionConstants.PREF_API_KEY, apiKey);
+        preferences.put(XVisionConstants.PREF_CUSTOM_ENDPOINT, customEndpoint);
+        try {
+            preferences.flush();
+        } catch (Exception e) {
+            handleError("Failed to save preferences", e);
+        }
     }
 
     public String getCode(JavaNode node) {
@@ -96,12 +103,31 @@ public class XVisionPlugin implements JadxPlugin {
         }
         return null;
     }
-
     private void initializeGUIComponents() {
         guiContext.addMenuAction("XVision configuration", () -> {
             new ConfigWindow(this).show();
         });
         XVisionContextMenuAction.addToContextMenu(guiContext, this);
+
+        // Load preferences
+        selectedLLM = getSelectedLLM();
+        apiKey = getApiKey();
+        customEndpoint = getCustomEndpoint();
+
+        // Initialize LLMCommunicator instance
+        initializeLLMCommunicator();
+    }
+
+    public void initializeLLMCommunicator() {
+        if (selectedLLM.equals(XVisionConstants.GPT4_SERVICE)) {
+            llmCommunicator = new LLMCommunicator.GPT4Communicator(apiKey);
+        } else if (selectedLLM.equals(XVisionConstants.CLAUDE_SERVICE)) {
+            llmCommunicator = new LLMCommunicator.ClaudeCommunicator(apiKey);
+        } else if (selectedLLM.equals(XVisionConstants.CUSTOM_SERVICE)) {
+            llmCommunicator = new LLMCommunicator.CustomLLMCommunicator(customEndpoint);
+        } else {
+            throw new IllegalArgumentException("Invalid LLM type: " + selectedLLM);
+        }
     }
 
 
@@ -109,43 +135,44 @@ public class XVisionPlugin implements JadxPlugin {
         return new JadxPluginOptions() {
             @Override
             public List<OptionDescription> getOptionsDescriptions() {
-                List<OptionDescription> options = new ArrayList<>();
+                // List<OptionDescription> options = new ArrayList<>();
                 // LLM Type option
-                options.add(new OptionDescription() {
-                    @Override
-                    public String defaultValue() { return "GPT-4"; }
-                    @Override
-                    public String name() { return "xvision-plugin.llmType"; }
-                    @Override
-                    public String description() { return "LLM Type"; }
-                    @Override
-                    public List<String> values() {
-                        return List.of("GPT-4", "GPT-3.5", "Claude", "Custom");
-                    }
-                });
+                // options.add(new OptionDescription() {
+                //     @Override
+                //     public String defaultValue() { return "GPT-4"; }
+                //     @Override
+                //     public String name() { return "xvision-plugin.llmType"; }
+                //     @Override
+                //     public String description() { return "LLM Type"; }
+                //     @Override
+                //     public List<String> values() {
+                //         return List.of("GPT-4", "GPT-3.5", "Claude", "Custom");
+                //     }
+                // });
                 // Custom Endpoint option
-                options.add(new OptionDescription() {
-                    @Override
-                    public String defaultValue() { return ""; }
-                    @Override
-                    public String name() { return "xvision-plugin.customEndpoint"; }
-                    @Override
-                    public String description() { return "Custom API Endpoint"; }
-                    @Override
-                    public List<String> values() { return List.of(); }
-                });
+                // options.add(new OptionDescription() {
+                //     @Override
+                //     public String defaultValue() { return ""; }
+                //     @Override
+                //     public String name() { return "xvision-plugin.customEndpoint"; }
+                //     @Override
+                //     public String description() { return "Custom API Endpoint"; }
+                //     @Override
+                //     public List<String> values() { return List.of(); }
+                // });
                 // API Key option
-                options.add(new OptionDescription() {
-                    @Override
-                    public String defaultValue() { return ""; }
-                    @Override
-                    public String name() { return "xvision-plugin.apiKey"; }
-                    @Override
-                    public String description() { return "API Key"; }
-                    @Override
-                    public List<String> values() { return List.of(); }
-                });
-                return options;
+                // options.add(new OptionDescription() {
+                //     @Override
+                //     public String defaultValue() { return ""; }
+                //     @Override
+                //     public String name() { return "xvision-plugin.apiKey"; }
+                //     @Override
+                //     public String description() { return "API Key"; }
+                //     @Override
+                //     public List<String> values() { return List.of(); }
+                // });
+                // return options;
+                return List.of();
             }
 
             @Override
@@ -166,38 +193,41 @@ public class XVisionPlugin implements JadxPlugin {
 
     private String showPromptDialog(String code) {
         JPanel panel = new JPanel(new BorderLayout(5, 5));
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
         // Create radio buttons for prompt selection
-        JRadioButton defaultPromptButton = new JRadioButton("Use default prompt", true);
-        JRadioButton customPromptButton = new JRadioButton("Use custom prompt");
-        ButtonGroup group = new ButtonGroup();
-        group.add(defaultPromptButton);
-        group.add(customPromptButton);
-        // Create prompt text area
-        JTextArea promptArea = new JTextArea(10, 50);
-        promptArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        promptArea.setWrapStyleWord(true);
-        promptArea.setLineWrap(true);
+        JRadioButton defaultPromptButton = new JRadioButton("Default Prompt");
+        JRadioButton customPromptButton = new JRadioButton("Custom Prompt");
+        ButtonGroup promptGroup = new ButtonGroup();
+        promptGroup.add(defaultPromptButton);
+        promptGroup.add(customPromptButton);
+        defaultPromptButton.setSelected(true);
+
+        // Create text area for prompt
+        JTextArea promptArea = new JTextArea(10, 40);
         promptArea.setText(String.format(DEFAULT_PROMPT_TEMPLATE, code));
         promptArea.setEnabled(false);
-        // Add scroll pane for prompt area
+
+        // Create code preview area
+        JTextArea codePreview = new JTextArea(10, 40);
+        codePreview.setText(code);
+        codePreview.setEditable(false);
+
+        // Create scroll panes
         JScrollPane promptScrollPane = new JScrollPane(promptArea);
         promptScrollPane.setBorder(BorderFactory.createTitledBorder("Prompt"));
-        // Create top panel for radio buttons
+
+        JScrollPane codeScrollPane = new JScrollPane(codePreview);
+        codeScrollPane.setBorder(BorderFactory.createTitledBorder("Code Preview"));
+
+        // Add components to main panel
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         topPanel.add(defaultPromptButton);
         topPanel.add(customPromptButton);
-        // Add code preview
-        JTextArea codePreview = new JTextArea(10, 50);
-        codePreview.setText(code);
-        codePreview.setEditable(false);
-        codePreview.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        JScrollPane codeScrollPane = new JScrollPane(codePreview);
-        codeScrollPane.setBorder(BorderFactory.createTitledBorder("Code Preview"));
-        // Add components to main panel
+
         panel.add(topPanel, BorderLayout.NORTH);
         panel.add(promptScrollPane, BorderLayout.CENTER);
         panel.add(codeScrollPane, BorderLayout.SOUTH);
+
         // Add listeners
         defaultPromptButton.addActionListener(e -> {
             promptArea.setText(String.format(DEFAULT_PROMPT_TEMPLATE, code));
@@ -205,12 +235,11 @@ public class XVisionPlugin implements JadxPlugin {
         });
         customPromptButton.addActionListener(e -> {
             promptArea.setEnabled(true);
+            promptArea.setText(getLastCustomPrompt());
         });
+
         // Show dialog
-        int result = JOptionPane.showConfirmDialog(null, panel,
-                "xVision Plugin",
-                JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE);
+        int result = JOptionPane.showConfirmDialog(null, panel, "xVision Plugin", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
         if (result == JOptionPane.OK_OPTION) {
             String prompt = promptArea.getText();
             saveCustomPrompt(prompt);
@@ -246,27 +275,7 @@ public class XVisionPlugin implements JadxPlugin {
 
 
     private String sendLLMRequest(String prompt) throws IOException, InterruptedException {
-        String endpoint = selectedLLM.equals("Custom") ? customEndpoint : LLM_ENDPOINTS.get(selectedLLM);
-        String requestBody = formatRequestBody(prompt);
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(endpoint))
-                .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + apiKey)
-                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                .build();
-
-        try {
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() != 200) {
-                throw new IOException("API request failed with status code: " + response.statusCode() +
-                        "\nResponse: " + response.body());
-            }
-            return parseResponse(response.body());
-        } catch (Exception e) {
-            e.printStackTrace(); // Log the stack trace for debugging
-            throw new IOException("Failed to communicate with LLM API", e);
-        }
+        return llmCommunicator.sendRequest(prompt);
     }
 
 
@@ -403,4 +412,19 @@ public class XVisionPlugin implements JadxPlugin {
         showError(fullMessage);
     }
 
+    public Preferences getPreferences() {
+        return preferences;
+    }
+
+    public String getSelectedLLM() {
+        return preferences.get(XVisionConstants.PREF_SELECTED_LLM, XVisionConstants.DEFAULT_LLM);
+    }
+
+    public String getApiKey() {
+        return preferences.get(XVisionConstants.PREF_API_KEY, XVisionConstants.DEFAULT_API_KEY);
+    }
+    public String getCustomEndpoint() {
+        return preferences.get(XVisionConstants.PREF_CUSTOM_ENDPOINT, XVisionConstants.DEFAULT_CUSTOM_ENDPOINT);
+    }
+    
 }
