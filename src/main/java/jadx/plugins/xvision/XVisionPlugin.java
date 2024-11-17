@@ -104,7 +104,7 @@ public class XVisionPlugin implements JadxPlugin {
         return null;
     }
     private void initializeGUIComponents() {
-        guiContext.addMenuAction("XVision configuration", () -> {
+        guiContext.addMenuAction("XVision Config", () -> {
             new ConfigWindow(this).show();
         });
         XVisionContextMenuAction.addToContextMenu(guiContext, this);
