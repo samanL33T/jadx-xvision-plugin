@@ -26,16 +26,6 @@ import java.awt.*;
 
 public class XVisionPlugin implements JadxPlugin {
     private static final String PLUGIN_NAME = "xVision Plugin";
-    private static final String DEFAULT_PROMPT_TEMPLATE = """
-            Assume the role of an expert Java developer and a security researcher. Analyze the provided Java code and answer following:
-            1. What does the code do?
-            2. Are there any security issues
-            3. Any suspicious or notable patterns
-
-            Code:
-            %s
-            """;
-
     private JadxPluginContext pluginContext;
     private JadxGuiContext guiContext;
     private Preferences preferences;
@@ -161,60 +151,79 @@ public class XVisionPlugin implements JadxPlugin {
     }
 
     private String showPromptDialog(String code) {
+        String defaultPrompt = preferences.get(XVisionConstants.PREF_DEFAULT_PROMPT, XVisionConstants.DEFAULT_PROMPT_TEMPLATE);
+
+        if (!defaultPrompt.contains("%s")) {
+            defaultPrompt = defaultPrompt + "\n\n%s";
+        }
         JPanel panel = new JPanel(new BorderLayout(5, 5));
+        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        // Create radio buttons for prompt selection
-        JRadioButton defaultPromptButton = new JRadioButton("Default Prompt");
-        JRadioButton customPromptButton = new JRadioButton("Custom Prompt");
-        ButtonGroup promptGroup = new ButtonGroup();
-        promptGroup.add(defaultPromptButton);
-        promptGroup.add(customPromptButton);
-        defaultPromptButton.setSelected(true);
-
-        // Create text area for prompt
-        JTextArea promptArea = new JTextArea(10, 40);
-        promptArea.setText(String.format(DEFAULT_PROMPT_TEMPLATE, code));
-        promptArea.setEnabled(false);
-
-        // Create code preview area
         JTextArea codePreview = new JTextArea(10, 40);
         codePreview.setText(code);
         codePreview.setEditable(false);
-
-        // Create scroll panes
-        JScrollPane promptScrollPane = new JScrollPane(promptArea);
-        promptScrollPane.setBorder(BorderFactory.createTitledBorder("Prompt"));
-
         JScrollPane codeScrollPane = new JScrollPane(codePreview);
         codeScrollPane.setBorder(BorderFactory.createTitledBorder("Code Preview"));
 
-        // Add components to main panel
-        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        topPanel.add(defaultPromptButton);
-        topPanel.add(customPromptButton);
 
-        panel.add(topPanel, BorderLayout.NORTH);
-        panel.add(promptScrollPane, BorderLayout.CENTER);
-        panel.add(codeScrollPane, BorderLayout.SOUTH);
+        JPanel customPromptPanel = new JPanel(new BorderLayout(5, 5));
+        JCheckBox useCustomPromptCheckbox = new JCheckBox("Add custom prompt");
+        JTextArea customPromptArea = new JTextArea(5, 40);
+        customPromptArea.setLineWrap(true);
+        customPromptArea.setWrapStyleWord(true);
+        JScrollPane customPromptScrollPane = new JScrollPane(customPromptArea);
+        customPromptScrollPane.setBorder(BorderFactory.createTitledBorder("Custom Prompt"));
+        customPromptScrollPane.setVisible(false);
 
-        // Add listeners
-        defaultPromptButton.addActionListener(e -> {
-            promptArea.setText(String.format(DEFAULT_PROMPT_TEMPLATE, code));
-            promptArea.setEnabled(false);
+
+        useCustomPromptCheckbox.addActionListener(e -> {
+            boolean isSelected = useCustomPromptCheckbox.isSelected();
+            customPromptScrollPane.setVisible(isSelected);
+            if (isSelected) {
+                customPromptArea.requestFocus();
+            }
+
+            panel.revalidate();
+            panel.repaint();
+            SwingUtilities.getWindowAncestor(panel).pack();
         });
-        customPromptButton.addActionListener(e -> {
-            promptArea.setEnabled(true);
-            promptArea.setText(uiManager.getLastCustomPrompt());
-        });
 
-        // Show dialog
-        int result = JOptionPane.showConfirmDialog(null, panel, "xVision Plugin", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-        if (result == JOptionPane.OK_OPTION) {
-            String prompt = promptArea.getText();
-            uiManager.saveCustomPrompt(prompt);
-            return defaultPromptButton.isSelected() ? String.format(DEFAULT_PROMPT_TEMPLATE, code) : prompt;
+        customPromptPanel.add(useCustomPromptCheckbox, BorderLayout.NORTH);
+        customPromptPanel.add(customPromptScrollPane, BorderLayout.CENTER);
+
+        panel.add(codeScrollPane, BorderLayout.CENTER);
+        panel.add(customPromptPanel, BorderLayout.SOUTH);
+
+
+        while (true) {
+            int result = JOptionPane.showConfirmDialog(null, panel,
+                "xVision Plugin - Analyzing Code",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
+
+            if (result == JOptionPane.OK_OPTION) {
+                // If custom prompt is checked but empty, show error and continue loop
+                if (useCustomPromptCheckbox.isSelected() && customPromptArea.getText().trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(null,
+                        "Custom prompt is required when checkbox is selected.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                    continue;
+                }
+
+
+                if (useCustomPromptCheckbox.isSelected()) {
+                    String customPrompt = customPromptArea.getText();
+                    if (!customPrompt.contains("%s")) {
+                        customPrompt = customPrompt + "\n\n%s";
+                    }
+                    return String.format(customPrompt, code);
+                } else {
+                    return String.format(defaultPrompt, code);
+                }
+            }
+            return null;
         }
-        return String.format(DEFAULT_PROMPT_TEMPLATE, code);
     }
 
     private boolean validateConfiguration() {

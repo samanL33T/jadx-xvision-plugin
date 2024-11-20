@@ -1,9 +1,20 @@
 package jadx.plugins.xvision.utils;
 
 public final class XVisionConstants {
+
+    public static final String PREF_DEFAULT_PROMPT = "defaultPrompt";
+    public static final String DEFAULT_PROMPT_TEMPLATE = """
+            Assume the role of an expert Java developer and a security researcher. Analyze the provided Java code and answer following:
+            1. What does the code do?
+            2. Are there any security issues
+            3. Any suspicious or notable patterns
+
+            Code:
+            %s
+            """;
     // LLM Service Names
-    public static final String GPT4_SERVICE = "GPT-4";
-    public static final String CLAUDE_SERVICE = "Claude";
+    public static final String GPT4_SERVICE = "GPT-4o";
+    public static final String CLAUDE_SERVICE = "Claude-Sonnet-3-5-20241022";
     public static final String CUSTOM_SERVICE = "Custom";
 
     // API Endpoints
