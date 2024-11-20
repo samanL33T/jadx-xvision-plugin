@@ -96,13 +96,7 @@ public interface LLMCommunicator {
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))
                     .build();
 
-            // System.out.println("Custom Request: " + request);  // Print the request
-            // System.out.println("Custom Request Body: {\"prompt\": \"" + prompt + "\"}");
-
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            // System.out.println("Custom Response: " + response);  // Print the response
-            // System.out.println("Custom Response Body: " + response.body());
 
             if (response.statusCode() != 200) {
                 JsonObject errorResponse = JsonParser.parseString(response.body()).getAsJsonObject();
@@ -170,8 +164,6 @@ public interface LLMCommunicator {
                         "\nResponse: " + response.body());
             }
 
-            // Parse the response and extract the generated text
-            // Example: return response.body();
             return response.body();
         }
     }

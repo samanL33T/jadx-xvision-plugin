@@ -35,7 +35,7 @@ public class UIManager {
 
     public void handleError(String message, Exception e) {
         String fullMessage = message + "\n" + e.getMessage();
-        e.printStackTrace(); // Log the stack trace for debugging
+        e.printStackTrace();
         showError(fullMessage);
     }
 
@@ -72,7 +72,6 @@ public class UIManager {
         JScrollPane scrollPane = new JScrollPane(textArea);
         scrollPane.setPreferredSize(new Dimension(800, 600));
 
-        // Add copy button
         JButton copyButton = new JButton("Copy to Clipboard");
         copyButton.addActionListener(e -> {
             StringSelection stringSelection = new StringSelection(analysis);
@@ -81,11 +80,10 @@ public class UIManager {
             JOptionPane.showMessageDialog(null, "Analysis copied to clipboard!");
         });
 
-        // Add components to panel
+
         resultPanel.add(scrollPane, BorderLayout.CENTER);
         resultPanel.add(copyButton, BorderLayout.SOUTH);
 
-        // Show dialog
         JDialog dialog = new JDialog();
         dialog.setTitle("xVision Analysis Result");
         dialog.setModal(true);
