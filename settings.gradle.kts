@@ -1,2 +1,2 @@
-rootProject.name = "Jadx-xVision-Plugin"
+rootProject.name = "jadx-xvision-plugin"
 

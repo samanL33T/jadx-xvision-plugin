@@ -11,37 +11,33 @@ plugins {
 }
 
 dependencies {
-   val jadxVersion = "1.5.1-SNAPSHOT"
+    val jadxVersion = "1.5.1-SNAPSHOT"
     val isJadxSnapshot = jadxVersion.endsWith("-SNAPSHOT")
 
-//   compileOnly("io.github.skylot:jadx-core:$jadxVersion") {
-//        isChanging = isJadxSnapshot
-//   }
-	implementation("io.github.skylot:jadx-core:1.5.1-SNAPSHOT") {
-		isChanging = true
-	}
-	implementation("io.github.skylot:jadx-dex-input:1.5.1-SNAPSHOT") {
-		isChanging = true
-	}
-	implementation("io.github.skylot:jadx-java-input:1.5.1-SNAPSHOT") {
-		isChanging = true
-	}
-	implementation("io.github.skylot:jadx-smali-input:1.5.1-SNAPSHOT") {
-		isChanging = true
-	}
-	implementation("io.github.skylot:jadx-kotlin-metadata:1.5.1-SNAPSHOT") {
-		isChanging = true
-	}
-
-    testImplementation("io.github.skylot:jadx-smali-input:$jadxVersion") {
+    compileOnly("io.github.skylot:jadx-core:$jadxVersion") {
         isChanging = isJadxSnapshot
     }
+
+    testImplementation("io.github.skylot:jadx-dex-input:$jadxVersion") {
+        isChanging = true
+    }
+    testImplementation("io.github.skylot:jadx-java-input:$jadxVersion") {
+        isChanging = true
+    }
+    testImplementation("io.github.skylot:jadx-smali-input:$jadxVersion") {
+        isChanging = true
+    }
+    testImplementation("io.github.skylot:jadx-kotlin-metadata:$jadxVersion") {
+        isChanging = true
+    }
+
     testImplementation("ch.qos.logback:logback-classic:1.5.9")
     testImplementation("org.assertj:assertj-core:3.26.3")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.2")
 
-    implementation ("com.google.code.gson:gson:2.8.9")
+    implementation("com.google.code.gson:gson:2.8.9")
+    implementation("org.apache.httpcomponents:httpclient:4.5.14")
 
 }
 
@@ -64,13 +60,10 @@ tasks {
     withType<Test> {
         useJUnitPlatform()
     }
-
-    // Configure the shadow JAR task
     withType<ShadowJar> {
-        archiveClassifier.set("") // remove '-all' suffix
+        archiveClassifier.set("")
     }
 
-    // Copy the result JAR into "build/dist" directory
     register<Copy>("dist") {
         group = "jadx-plugin"
         dependsOn(withType<ShadowJar>())
@@ -81,9 +74,11 @@ tasks {
     }
 }
 
-// Ensure the JAR file is created in the build/libs directory
 tasks.withType<Jar> {
-    archiveBaseName.set("jadx-xVision-plugin")
-    archiveVersion.set(version.toString())
-    destinationDirectory.set(layout.buildDirectory.dir("libs"))
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from(sourceSets.main.get().output)
+
+    from({
+        configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
+    })
 }

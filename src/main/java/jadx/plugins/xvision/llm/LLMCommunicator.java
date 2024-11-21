@@ -2,18 +2,20 @@ package jadx.plugins.xvision.llm;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonElement;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.client.HttpClient;
+import org.apache.http.HttpResponse;
+import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import jadx.plugins.xvision.utils.XVisionConstants;
 
 public interface LLMCommunicator {
-    String sendRequest(String prompt) throws IOException, InterruptedException;
+    String sendRequest(String prompt) throws IOException;
 
     class GPT4Communicator implements LLMCommunicator {
         private final String apiKey;
@@ -21,11 +23,11 @@ public interface LLMCommunicator {
 
         public GPT4Communicator(String apiKey) {
             this.apiKey = apiKey;
-            this.httpClient = HttpClient.newHttpClient();
+            this.httpClient = HttpClients.createDefault();
         }
 
         @Override
-        public String sendRequest(String prompt) throws IOException, InterruptedException {
+        public String sendRequest(String prompt) throws IOException {
             JsonObject requestBody = new JsonObject();
             requestBody.addProperty("model", XVisionConstants.GPT4_MODEL);
 
@@ -42,29 +44,26 @@ public interface LLMCommunicator {
 
             requestBody.add("messages", messages);
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(XVisionConstants.OPENAI_API_ENDPOINT))
-                    .header("Content-Type", "application/json")
-                    .header("Authorization", "Bearer " + apiKey)
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))
-                    .build();
-            System.out.println("GPR Request: " + request);  // Print the request
-            System.out.println("GPT Request Body: {\"prompt\": \"" + prompt + "\"}");
+            HttpPost request = new HttpPost(XVisionConstants.OPENAI_API_ENDPOINT);
+            request.setHeader("Content-Type", "application/json");
+            request.setHeader("Authorization", "Bearer " + apiKey);
+            request.setEntity(new StringEntity(requestBody.toString()));
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse response = httpClient.execute(request);
+            int statusCode = response.getStatusLine().getStatusCode();
 
-            if (response.statusCode() != 200) {
-                throw new IOException("API request failed with status code: " + response.statusCode() +
-                        "\nResponse: " + response.body());
+            if (statusCode != 200) {
+                throw new IOException("API request failed with status code: " + statusCode +
+                        "\nResponse: " + EntityUtils.toString(response.getEntity()));
             }
 
-            JsonObject jsonResponse = JsonParser.parseString(response.body()).getAsJsonObject();
+            JsonObject jsonResponse = JsonParser.parseString(EntityUtils.toString(response.getEntity())).getAsJsonObject();
             JsonArray choices = jsonResponse.getAsJsonArray("choices");
             if (choices.size() > 0) {
                 JsonObject message = choices.get(0).getAsJsonObject().getAsJsonObject("message");
                 return message.get("content").getAsString();
             } else {
-                throw new RuntimeException("No choices found in the response: " + response.body());
+                throw new RuntimeException("No choices found in the response: " + EntityUtils.toString(response.getEntity()));
             }
         }
     }
@@ -75,11 +74,11 @@ public interface LLMCommunicator {
 
         public ClaudeCommunicator(String apiKey) {
             this.apiKey = apiKey;
-            this.httpClient = HttpClient.newHttpClient();
+            this.httpClient = HttpClients.createDefault();
         }
 
         @Override
-        public String sendRequest(String prompt) throws IOException, InterruptedException {
+        public String sendRequest(String prompt) throws IOException {
             JsonObject requestBody = new JsonObject();
             requestBody.addProperty("model", XVisionConstants.CLAUDE_MODEL);
             requestBody.addProperty("max_tokens", 1024);
@@ -90,31 +89,21 @@ public interface LLMCommunicator {
             messages.add(userMessage);
             requestBody.add("messages", messages);
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(XVisionConstants.CLAUDE_API_ENDPOINT))
-                    .header("Content-Type", "application/json")
-                    .header("X-API-Key", apiKey)
-                    .header("anthropic-version", "2023-06-01")
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))
-                    .build();
-           System.out.println("Claude Request: " + request);  // Print the request
-           System.out.println("Claude Request Body: {\"prompt\": \"" + prompt + "\"}");
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpPost request = new HttpPost(XVisionConstants.CLAUDE_API_ENDPOINT);
+            request.setHeader("Content-Type", "application/json");
+            request.setHeader("X-API-Key", apiKey);
+            request.setHeader("anthropic-version", "2023-06-01");
+            request.setEntity(new StringEntity(requestBody.toString()));
 
-            if (response.statusCode() != 200) {
-                JsonObject errorResponse = JsonParser.parseString(response.body()).getAsJsonObject();
-                if (errorResponse.has("error")) {
-                    JsonObject error = errorResponse.getAsJsonObject("error");
-                    String errorType = error.get("type").getAsString();
-                    String errorMessage = error.get("message").getAsString();
-                    throw new IOException("API request failed with error: " + errorType + " - " + errorMessage);
-                } else {
-                    throw new IOException("API request failed with status code: " + response.statusCode() +
-                            "\nResponse: " + response.body());
-                }
+            HttpResponse response = httpClient.execute(request);
+            int statusCode = response.getStatusLine().getStatusCode();
+
+            if (statusCode != 200) {
+                throw new IOException("API request failed with status code: " + statusCode +
+                        "\nResponse: " + EntityUtils.toString(response.getEntity()));
             }
 
-            JsonObject jsonResponse = JsonParser.parseString(response.body()).getAsJsonObject();
+            JsonObject jsonResponse = JsonParser.parseString(EntityUtils.toString(response.getEntity())).getAsJsonObject();
             JsonArray content = jsonResponse.getAsJsonArray("content");
 
             if (content != null && content.size() > 0) {
@@ -127,7 +116,7 @@ public interface LLMCommunicator {
                 }
                 return result.toString();
             } else {
-                throw new RuntimeException("No content found in the response: " + response.body());
+                throw new RuntimeException("No content found in the response: " + EntityUtils.toString(response.getEntity()));
             }
         }
     }
@@ -138,36 +127,24 @@ public interface LLMCommunicator {
 
         public CustomLLMCommunicator(String endpoint) {
             this.endpoint = endpoint;
-            this.httpClient = HttpClient.newHttpClient();
+            this.httpClient = HttpClients.createDefault();
         }
 
         @Override
-        public String sendRequest(String prompt) throws IOException, InterruptedException {
-            // Implement the custom request logic based on the provided endpoint
-            // You may need to adjust the request body, headers, and response parsing
-            // based on the API specifications of the custom LLM
+        public String sendRequest(String prompt) throws IOException {
+            HttpPost request = new HttpPost(endpoint);
+            request.setHeader("Content-Type", "application/json");
+            request.setEntity(new StringEntity("{\"prompt\": \"" + prompt + "\"}"));
 
-            // Example implementation (replace with your custom logic)
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(endpoint))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString("{\"prompt\": \"" + prompt + "\"}"))
-                    .build();
+            HttpResponse response = httpClient.execute(request);
+            int statusCode = response.getStatusLine().getStatusCode();
 
-//            System.out.println("Custom Request: " + request);  // Print the request
-//            System.out.println("Custom Request Body: {\"prompt\": \"" + prompt + "\"}");
-
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-//            System.out.println("Custom Response: " + response);  // Print the response
-//            System.out.println("Custom Response Body: " + response.body());
-
-            if (response.statusCode() != 200) {
-                throw new IOException("API request failed with status code: " + response.statusCode() +
-                        "\nResponse: " + response.body());
+            if (statusCode != 200) {
+                throw new IOException("API request failed with status code: " + statusCode +
+                        "\nResponse: " + EntityUtils.toString(response.getEntity()));
             }
 
-            return response.body();
+            return EntityUtils.toString(response.getEntity());
         }
     }
 }
