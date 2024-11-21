@@ -1,23 +1,22 @@
 package jadx.plugins.xvision.config;
 
-import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import jadx.plugins.xvision.XVisionPlugin;
 import jadx.plugins.xvision.utils.XVisionConstants;
 
+
 public class XVisionConfigPanel extends JPanel {
     private final XVisionPlugin plugin;
-    private final Preferences preferences;
     private JComboBox<String> llmComboBox;
     private JTextField apiKeyField;
     private JTextField customEndpointField;
-    private JTextArea defaultPromptArea; 
+    private JTextArea defaultPromptArea;
+    private JComboBox<String> llmTypeComboBox;
 
-    public XVisionConfigPanel(XVisionPlugin plugin, Preferences preferences) {
+    public XVisionConfigPanel(XVisionPlugin plugin) {
         this.plugin = plugin;
-        this.preferences = preferences;
         initComponents();
         loadPreferences();
     }
@@ -110,10 +109,10 @@ public class XVisionConfigPanel extends JPanel {
     }
 
     private void loadPreferences() {
-        String selectedLLM = preferences.get(XVisionConstants.PREF_SELECTED_LLM, XVisionConstants.DEFAULT_LLM);
-        String apiKey = preferences.get(XVisionConstants.PREF_API_KEY, XVisionConstants.DEFAULT_API_KEY);
-        String customEndpoint = preferences.get(XVisionConstants.PREF_CUSTOM_ENDPOINT, XVisionConstants.DEFAULT_CUSTOM_ENDPOINT);
-        String defaultPrompt = preferences.get("defaultPrompt", XVisionConstants.DEFAULT_PROMPT_TEMPLATE);
+        String selectedLLM = plugin.getSelectedLLM();
+        String apiKey = plugin.getApiKey();
+        String customEndpoint = plugin.getCustomEndpoint();
+        String defaultPrompt = plugin.getDefaultPrompt();
         defaultPromptArea.setText(defaultPrompt);
 
         llmComboBox.setSelectedItem(selectedLLM);
@@ -122,13 +121,9 @@ public class XVisionConfigPanel extends JPanel {
     }
 
     public void savePreferences() {
-        String selectedLLM = (String) llmComboBox.getSelectedItem();
-        String apiKey = apiKeyField.getText();
-        String customEndpoint = customEndpointField.getText();
-        String defaultPrompt = defaultPromptArea.getText();
-        preferences.put("defaultPrompt", defaultPrompt);
-
-        plugin.updatePreferences(selectedLLM, apiKey, customEndpoint);
-        plugin.initializeLLMCommunicator(); 
+        plugin.setSelectedLLM((String) llmComboBox.getSelectedItem());
+        plugin.setApiKey(apiKeyField.getText());
+        plugin.setCustomEndpoint(customEndpointField.getText());
+        plugin.initializeLLMCommunicator();
     }
 }

@@ -28,9 +28,6 @@ public final class XVisionConstants {
     public static final String DEFAULT_CUSTOM_ENDPOINT = "";
     public static final String DEFAULT_PROMPT_TEMPLATE = """
             Let the variable names and method names of the following code change as the name implies, the original meaning of the code cannot be changed, the order cannot be changed, and the unprocessed ones remain as they are, the number of lines of the code cannot be optimized, the code cannot be omitted, the code cannot be deleted or added, and the naming conflict cannot be allowed . The original name should be written above them in the form of a comment, keep the comment. Line comments must be added to Each line of code to explain the meaning of the code, and comments between multiple lines of code also need to be marked.
-            
-            Code:
-            %s
             """;
 
     private XVisionConstants() {

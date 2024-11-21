@@ -9,8 +9,6 @@ import jadx.api.plugins.JadxPlugin;
 import jadx.api.plugins.JadxPluginContext;
 import jadx.api.plugins.JadxPluginInfo;
 import jadx.api.plugins.gui.JadxGuiContext;
-import jadx.api.plugins.options.JadxPluginOptions;
-import jadx.api.plugins.options.OptionDescription;
 import jadx.plugins.xvision.llm.LLMCommunicator;
 import jadx.plugins.xvision.ui.UIManager;
 import jadx.plugins.xvision.utils.XVisionConstants;
@@ -19,7 +17,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
-import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -28,16 +25,21 @@ public class XVisionPlugin implements JadxPlugin {
     private static final String PLUGIN_NAME = "xVision Plugin";
     private JadxPluginContext pluginContext;
     private JadxGuiContext guiContext;
-    private Preferences preferences;
     private String selectedLLM;
     private String apiKey;
     private String customEndpoint;
     private LLMCommunicator llmCommunicator;
     private UIManager uiManager;
     private JadxPluginInfo pluginInfo;
+    private JadxDecompiler decompiler;
+
+    public XVisionPlugin(JadxDecompiler decompiler) {
+        this.decompiler = decompiler;
+        PreferencesManager.initializeJadxArgs(decompiler);
+    }
 
     public XVisionPlugin() {
-        preferences = Preferences.userNodeForPackage(XVisionPlugin.class);
+        // No-argument constructor required by JADX plugin system
     }
 
     @Override
@@ -58,26 +60,51 @@ public class XVisionPlugin implements JadxPlugin {
             uiManager = new UIManager(this);
             uiManager.initializeGUIComponents(guiContext);
         }
-        context.registerOptions(getOptions());
+        loadPreferences();
+    }
+
+    private void loadPreferences() {
+        selectedLLM = PreferencesManager.getLLMType();
+        apiKey = PreferencesManager.getApiKey();
+        customEndpoint = PreferencesManager.getCustomEndpoint();
+        initializeLLMCommunicator();
     }
 
     public JadxPluginContext getContext() {
         return pluginContext;
     }
-
-    public void updatePreferences(String selectedLLM, String apiKey, String customEndpoint) {
-        this.selectedLLM = selectedLLM;
+    public void setApiKey(String apiKey) {
         this.apiKey = apiKey;
+    }
+    
+    public String getApiKey() {
+        return apiKey;
+    }
+    
+    public void setCustomEndpoint(String customEndpoint) {
         this.customEndpoint = customEndpoint;
-
-        preferences.put(XVisionConstants.PREF_SELECTED_LLM, selectedLLM);
-        preferences.put(XVisionConstants.PREF_API_KEY, apiKey);
-        preferences.put(XVisionConstants.PREF_CUSTOM_ENDPOINT, customEndpoint);
-        try {
-            preferences.flush();
-        } catch (Exception e) {
-            uiManager.handleError("Failed to save preferences", e);
-        }
+    }
+    
+    public String getCustomEndpoint() {
+        return customEndpoint;
+    }
+    
+    public void setSelectedLLM(String selectedLLM) {
+        this.selectedLLM = selectedLLM;
+    }
+    
+    public String getSelectedLLM() {
+        return selectedLLM;
+    }
+       
+    public String getDefaultPrompt() {
+        return XVisionConstants.DEFAULT_PROMPT_TEMPLATE;
+    }
+    public void updatePreferences(String selectedLLM, String apiKey, String customEndpoint) {
+        PreferencesManager.setLLMType(selectedLLM);
+        PreferencesManager.setApiKey(apiKey);
+        PreferencesManager.setCustomEndpoint(customEndpoint);
+        initializeLLMCommunicator();
     }
 
     public String getCode(JavaNode node) {
@@ -95,32 +122,8 @@ public class XVisionPlugin implements JadxPlugin {
         } else if (selectedLLM.equals(XVisionConstants.CLAUDE_SERVICE)) {
             llmCommunicator = new LLMCommunicator.ClaudeCommunicator(apiKey);
         } else if (selectedLLM.equals(XVisionConstants.CUSTOM_SERVICE)) {
-            llmCommunicator = new LLMCommunicator.CustomLLMCommunicator(customEndpoint);
-        } else {
-            throw new IllegalArgumentException("Invalid LLM type: " + selectedLLM);
+            llmCommunicator = new LLMCommunicator.CustomLLMCommunicator(apiKey);
         }
-    }
-
-    public JadxPluginOptions getOptions() {
-        return new JadxPluginOptions() {
-            @Override
-            public List<OptionDescription> getOptionsDescriptions() {
-                return List.of();
-            }
-
-            @Override
-            public void setOptions(Map<String, String> options) {
-                Preferences prefs = Preferences.userNodeForPackage(XVisionPlugin.class);
-                selectedLLM = options.getOrDefault("xvision-plugin.llmType", prefs.get("llmType", "GPT-4"));
-                customEndpoint = options.getOrDefault("xvision-plugin.customEndpoint", prefs.get("customEndpoint", ""));
-                apiKey = options.getOrDefault("xvision-plugin.apiKey", prefs.get("apiKey", ""));
-
-                // Save preferences
-                prefs.put("llmType", selectedLLM);
-                prefs.put("customEndpoint", customEndpoint);
-                prefs.put("apiKey", apiKey);
-            }
-        };
     }
 
     public void analyzeCode(String code) {
@@ -151,7 +154,7 @@ public class XVisionPlugin implements JadxPlugin {
     }
 
     private String showPromptDialog(String code) {
-        String defaultPrompt = preferences.get(XVisionConstants.PREF_DEFAULT_PROMPT, XVisionConstants.DEFAULT_PROMPT_TEMPLATE);
+        String defaultPrompt = XVisionConstants.DEFAULT_PROMPT_TEMPLATE;
 
         if (!defaultPrompt.contains("%s")) {
             defaultPrompt = defaultPrompt + "\n\n%s";

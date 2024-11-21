@@ -2,19 +2,16 @@ package jadx.plugins.xvision.config;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.prefs.Preferences;
 import jadx.plugins.xvision.XVisionPlugin;
 
 public class ConfigWindow {
     private final XVisionPlugin plugin;
-    private final Preferences preferences;
     
     private static final int WINDOW_WIDTH = 800; 
     private static final int WINDOW_HEIGHT = 600;
 
     public ConfigWindow(XVisionPlugin plugin) {
         this.plugin = plugin;
-        this.preferences = Preferences.userNodeForPackage(XVisionPlugin.class);
     }
 
     public void show() {
@@ -24,7 +21,7 @@ public class ConfigWindow {
         frame.setMinimumSize(new Dimension(600, 400));
         frame.setLocationRelativeTo(null);
 
-        XVisionConfigPanel configPanel = new XVisionConfigPanel(plugin, preferences);
+        XVisionConfigPanel configPanel = new XVisionConfigPanel(plugin);
 
         JButton saveButton = new JButton("Save");
         saveButton.addActionListener(e -> {

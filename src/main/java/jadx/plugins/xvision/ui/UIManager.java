@@ -39,25 +39,6 @@ public class UIManager {
         showError(fullMessage);
     }
 
-    public void saveCustomPrompt(String prompt) {
-        try {
-            Preferences prefs = Preferences.userNodeForPackage(XVisionPlugin.class);
-            prefs.put("lastCustomPrompt", prompt);
-        } catch (Exception e) {
-            handleError("Failed to save custom prompt", e);
-        }
-    }
-
-    public String getLastCustomPrompt() {
-        try {
-            Preferences prefs = Preferences.userNodeForPackage(XVisionPlugin.class);
-            return prefs.get("lastCustomPrompt", "");
-        } catch (Exception e) {
-            handleError("Failed to retrieve custom prompt", e);
-            return "";
-        }
-    }
-
     public void showAnalysisResult(String analysis) {
         JPanel resultPanel = new JPanel(new BorderLayout(5, 5));
         resultPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));

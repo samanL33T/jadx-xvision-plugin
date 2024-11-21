@@ -48,6 +48,8 @@ public interface LLMCommunicator {
                     .header("Authorization", "Bearer " + apiKey)
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))
                     .build();
+            System.out.println("GPR Request: " + request);  // Print the request
+            System.out.println("GPT Request Body: {\"prompt\": \"" + prompt + "\"}");
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
@@ -95,7 +97,8 @@ public interface LLMCommunicator {
                     .header("anthropic-version", "2023-06-01")
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))
                     .build();
-
+           System.out.println("Claude Request: " + request);  // Print the request
+           System.out.println("Claude Request Body: {\"prompt\": \"" + prompt + "\"}");
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() != 200) {
