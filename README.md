@@ -13,6 +13,7 @@ xVision is a plugin for the [JadX](https://github.com/skylot/jadx) decompiler th
 ## Screenshots
 
 ![](screenshots/xVision_config.png "xVision Config")
+![](screenshots/xVision_Analyse_with_XVision.png "xVision Analysis Prompt")
 ![](screenshots/xVision_prompt_Box.png "xVision Analysis Prompt")
 ![](screenshots/xVision_Analysis.png "xVision Analysis")
 
