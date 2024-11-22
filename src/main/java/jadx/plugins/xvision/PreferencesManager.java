@@ -14,7 +14,6 @@ public class PreferencesManager {
 
     public static void initializeJadxArgs(JadxDecompiler decompiler) {
         jadxArgs = decompiler.getArgs();
-        System.out.println("Initializing jadxArgs: " + (jadxArgs != null ? "success" : "null"));
     }
 
     public static String getPreference(String key, String defaultValue) {
@@ -64,14 +63,10 @@ public class PreferencesManager {
     }
     
     public static String getDefaultPrompt() {
-        System.out.println("Getting default prompt");
-        System.out.println("jadxArgs is: " + (jadxArgs != null ? "not null" : "null"));
         if (hasCustomDefaultPrompt()) {
             String prompt = getPreference(PREF_KEY_DEFAULT_PROMPT, XVisionConstants.DEFAULT_PROMPT_TEMPLATE);
-            System.out.println("Retrieved custom prompt: " + prompt);
             return prompt;
         }
-        System.out.println("Using default template prompt");
         return XVisionConstants.DEFAULT_PROMPT_TEMPLATE;
     }
 

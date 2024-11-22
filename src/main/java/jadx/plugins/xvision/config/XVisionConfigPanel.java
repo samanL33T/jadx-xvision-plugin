@@ -100,12 +100,35 @@ public class XVisionConfigPanel extends JPanel {
             BorderFactory.createEmptyBorder(5, 0, 5, 0),
             BorderFactory.createLineBorder(Color.GRAY)
         ));
+
+        JPanel promptPanel = new JPanel(new BorderLayout(5, 5));
+        promptPanel.add(promptScrollPane, BorderLayout.CENTER);
+        
+        JButton resetButton = new JButton("Reset Prompt");
+        resetButton.setFont(new Font("Dialog", Font.PLAIN, 12));
+        resetButton.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(
+                this,
+                "Are you sure you want to reset the prompt to default?",
+                "Confirm Reset",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+            );
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                defaultPromptArea.setText(XVisionConstants.DEFAULT_PROMPT_TEMPLATE);
+            }
+        });
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.add(resetButton);
+        promptPanel.add(buttonPanel, BorderLayout.SOUTH);
         
         gbc.gridx = 1;
         gbc.gridy = 3;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weighty = 1.0; 
-        add(promptScrollPane, gbc);
+        add(promptPanel, gbc);
     }
 
     private void loadPreferences() {
