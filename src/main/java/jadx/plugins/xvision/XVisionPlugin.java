@@ -12,6 +12,8 @@ import jadx.api.plugins.gui.JadxGuiContext;
 import jadx.plugins.xvision.llm.LLMCommunicator;
 import jadx.plugins.xvision.ui.UIManager;
 import jadx.plugins.xvision.utils.XVisionConstants;
+import jadx.plugins.xvision.utils.CodeExtractor;
+import jadx.plugins.xvision.ui.CodeDisplayWindow;
 
 import java.io.IOException;
 import java.util.List;
@@ -22,7 +24,8 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class XVisionPlugin implements JadxPlugin {
-    private static final String PLUGIN_NAME = "xVision Plugin";
+    public static final String PLUGIN_NAME = "xVision Plugin";
+    public static final String PLUGIN_ID = "xvision-plugin";
     private JadxPluginContext pluginContext;
     private JadxGuiContext guiContext;
     private String selectedLLM;
@@ -32,6 +35,7 @@ public class XVisionPlugin implements JadxPlugin {
     private UIManager uiManager;
     private JadxPluginInfo pluginInfo;
     private JadxDecompiler decompiler;
+    private boolean renderInSeparateWindow = false;
 
     public XVisionPlugin(JadxDecompiler decompiler) {
         this.decompiler = decompiler;
@@ -45,16 +49,18 @@ public class XVisionPlugin implements JadxPlugin {
     @Override
     public JadxPluginInfo getPluginInfo() {
         return new JadxPluginInfo(
-                "xvision-plugin",
-                PLUGIN_NAME,
-                "xVision: LLM integration for code analysis",
-                "0.1.0"
+                PLUGIN_ID, 
+                PLUGIN_NAME,      
+                "xVision: LLM integration for code analysis"
         );
     }
 
     @Override
     public void init(JadxPluginContext context) {
         this.pluginContext = context;
+        if (context.getDecompiler() != null) {
+            PreferencesManager.initializeJadxArgs(context.getDecompiler());
+        }
         if (context.getGuiContext() != null) {
             this.guiContext = context.getGuiContext();
             uiManager = new UIManager(this);
@@ -98,8 +104,13 @@ public class XVisionPlugin implements JadxPlugin {
     }
        
     public String getDefaultPrompt() {
-        return XVisionConstants.DEFAULT_PROMPT_TEMPLATE;
+        return PreferencesManager.getDefaultPrompt();
     }
+
+    public void setDefaultPrompt(String defaultPrompt) {
+        PreferencesManager.setDefaultPrompt(defaultPrompt);
+    }
+    
     public void updatePreferences(String selectedLLM, String apiKey, String customEndpoint) {
         PreferencesManager.setLLMType(selectedLLM);
         PreferencesManager.setApiKey(apiKey);
@@ -140,13 +151,26 @@ public class XVisionPlugin implements JadxPlugin {
             protected void done() {
                 try {
                     String response = get();
-                    uiManager.showAnalysisResult(response);
+                    if (renderInSeparateWindow) {
+                        String extractedCode = CodeExtractor.extractJavaCode(response);
+                        if (!extractedCode.isEmpty()) {
+                            SwingUtilities.invokeLater(() -> {
+                                CodeDisplayWindow codeWindow = new CodeDisplayWindow(extractedCode, "Analyzed Code");
+                                codeWindow.setVisible(true);
+                            });
+                        } else {
+                            // Show regular response if no code was found to extract
+                            uiManager.showAnalysisResult(response);
+                        }
+                    } else {
+                        uiManager.showAnalysisResult(response);
+                    }
                 } catch (Exception e) {
                     uiManager.handleError("Error analyzing code", e);
                 }
             }
-        };
-        worker.execute();
+                };
+                worker.execute();
     }
 
     private String sendLLMRequest(String prompt) throws IOException, InterruptedException {
@@ -154,7 +178,7 @@ public class XVisionPlugin implements JadxPlugin {
     }
 
     private String showPromptDialog(String code) {
-        String defaultPrompt = XVisionConstants.DEFAULT_PROMPT_TEMPLATE;
+        String defaultPrompt = getDefaultPrompt();
 
         if (!defaultPrompt.contains("%s")) {
             defaultPrompt = defaultPrompt + "\n\n%s";
@@ -171,13 +195,20 @@ public class XVisionPlugin implements JadxPlugin {
 
         JPanel customPromptPanel = new JPanel(new BorderLayout(5, 5));
         JCheckBox useCustomPromptCheckbox = new JCheckBox("Add custom prompt");
+        JCheckBox renderSeparateWindowCheckbox = new JCheckBox("Render the code in new window");
+        JPanel checkboxPanel = new JPanel(new GridLayout(2, 1));
+        checkboxPanel.add(useCustomPromptCheckbox);
+        checkboxPanel.add(renderSeparateWindowCheckbox);
+
         JTextArea customPromptArea = new JTextArea(5, 40);
         customPromptArea.setLineWrap(true);
         customPromptArea.setWrapStyleWord(true);
         JScrollPane customPromptScrollPane = new JScrollPane(customPromptArea);
         customPromptScrollPane.setBorder(BorderFactory.createTitledBorder("Custom Prompt"));
         customPromptScrollPane.setVisible(false);
-
+        
+        customPromptPanel.add(checkboxPanel, BorderLayout.NORTH);
+        customPromptPanel.add(customPromptScrollPane, BorderLayout.CENTER);
 
         useCustomPromptCheckbox.addActionListener(e -> {
             boolean isSelected = useCustomPromptCheckbox.isSelected();
@@ -191,9 +222,6 @@ public class XVisionPlugin implements JadxPlugin {
             SwingUtilities.getWindowAncestor(panel).pack();
         });
 
-        customPromptPanel.add(useCustomPromptCheckbox, BorderLayout.NORTH);
-        customPromptPanel.add(customPromptScrollPane, BorderLayout.CENTER);
-
         panel.add(codeScrollPane, BorderLayout.CENTER);
         panel.add(customPromptPanel, BorderLayout.SOUTH);
 
@@ -205,6 +233,7 @@ public class XVisionPlugin implements JadxPlugin {
                 JOptionPane.PLAIN_MESSAGE);
 
             if (result == JOptionPane.OK_OPTION) {
+                renderInSeparateWindow = renderSeparateWindowCheckbox.isSelected();
                 // If custom prompt is checked but empty, show error and continue loop
                 if (useCustomPromptCheckbox.isSelected() && customPromptArea.getText().trim().isEmpty()) {
                     JOptionPane.showMessageDialog(null,

@@ -124,6 +124,7 @@ public class XVisionConfigPanel extends JPanel {
         plugin.setSelectedLLM((String) llmComboBox.getSelectedItem());
         plugin.setApiKey(apiKeyField.getText());
         plugin.setCustomEndpoint(customEndpointField.getText());
+        plugin.setDefaultPrompt(defaultPromptArea.getText()); 
         plugin.initializeLLMCommunicator();
     }
 }

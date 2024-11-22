@@ -38,6 +38,7 @@ dependencies {
 
     implementation("com.google.code.gson:gson:2.8.9")
     implementation("org.apache.httpcomponents:httpclient:4.5.14")
+    implementation("com.fifesoft:rsyntaxtextarea:3.5.2")
 
 }
 
