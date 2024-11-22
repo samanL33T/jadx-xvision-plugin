@@ -14,8 +14,9 @@ xVision is a plugin for the [JadX](https://github.com/skylot/jadx) decompiler th
 ## Screenshots
 
 ![](screenshots/xVision_config.png "xVision Config")
-![](screenshots/xVision_Analyse_with_XVision.png "xVision Analysis Prompt")
+![](screenshots/xVision_Analyse_with_XVision.png "COntext menu optin - Analyze with xVision")
 ![](screenshots/xVision_prompt_Box.png "xVision Analysis Prompt")
+![](screenshots/xVision_Analysis_with_updated_code_rendering.png "xVision Analysis with code rendering")
 ![](screenshots/xVision_Analysis.png "xVision Analysis")
 
 ## Installation
@@ -57,8 +58,9 @@ xVision is a plugin for the [JadX](https://github.com/skylot/jadx) decompiler th
 ### JadX GUI
 
 1. **Open JadX GUI**.
-2. **Load a Java archive (JAR) file**.
-3. **Right-click on a class or method** and select **Analyze with xVision Plugin**.
+2. **Load a supported package to analyze**.
+3. **Click Menu -> 'Xvision Config'** - Select LLM to use and add **API Key**
+4. **Right-click on a class or method** and select **Analyze with xVision Plugin**.
 
 ### Configuration
 
@@ -81,7 +83,9 @@ Following configurations are available:
 
 
 ## Thanks
-- [MartinKayJr](https://github.com/skylot/jadx/issues/1884#issue-1727047157) - Default prompt.
+- [MartinKayJr](https://github.com/skylot/jadx/issues/1884#issue-1727047157) - for default prompt.
+- [Devilx86](https://github.com/Devilx86/jadx-ai-view-plugin) - LLM response Code Rendering in a new window.
+- bobbylight [RSyntaxTextArea](https://github.com/bobbylight/RSyntaxTextArea)
 
 
 ## Contributing
