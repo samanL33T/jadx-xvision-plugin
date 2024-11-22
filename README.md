@@ -28,7 +28,7 @@ xVision is a plugin for the [JadX](https://github.com/skylot/jadx) decompiler th
 
 ### Download the jar file from releases
 
-- [jadX-xVision Plugin v0.0.1](https://github.com/samanl33t/jadx-xvision-plugin/releases/download/v1.0.0/jadx-xvision-plugin_v1.0.0.jar)
+- [jadX-xVision Plugin v1.0.0](https://github.com/samanl33t/jadx-xvision-plugin/releases/download/v1.0.0/jadx-xvision-plugin_v1.0.0.jar)
 
 ### Build locally
 
