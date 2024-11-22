@@ -6,10 +6,11 @@ xVision is a plugin for the [JadX](https://github.com/skylot/jadx) decompiler th
 
 ## Features
 
-- **LLM Integration**: Supports GPT-4 (NOt tested, but should support: Claude, and custom LLMs as well).
+- **LLM Integration**: Supports GPT-4 & Claude-sonnet-3-5-20241022
 - **Code Analysis**: Analyze Java code for functionality, security issues, and notable patterns.
 - **Custom Prompts**: Configure custom prompts for analysis.
 - **GUI Integration**: Integrates with JadX GUI for easy access.
+
 ## Screenshots
 
 ![](screenshots/xVision_config.png "xVision Config")
@@ -21,7 +22,7 @@ xVision is a plugin for the [JadX](https://github.com/skylot/jadx) decompiler th
 
 ### Prerequisites
 
-- JadX (CLI or GUI)
+- JadX v1.5.0 or later (CLI or GUI)
 - Java Development Kit (JDK) 11 or higher
 
 ### Download the jar file from releases
@@ -59,28 +60,29 @@ xVision is a plugin for the [JadX](https://github.com/skylot/jadx) decompiler th
 2. **Load a Java archive (JAR) file**.
 3. **Right-click on a class or method** and select **Analyze with xVision Plugin**.
 
-!JadX GUI
-
 ### Configuration
 
-1. **Open the plugin settings**:
-    - For `jadx-cli`: Edit the configuration file located at `~/.jadx/plugins/xvision-plugin.properties`.
-    - For `jadx-gui`: Go to **Preferences** > **Plugins** > **xVision Plugin**.
+The Plugin options can be configured from Menu bar > Plugins > xVision Config.
+Following configurations are available:
 
-2. **Set the API Key and LLM Type**:
-    ```properties
-    xvision-plugin.apiKey=your-api-key
-    xvision-plugin.llmType=GPT-4
-    xvision-plugin.customEndpoint=https://your-custom-endpoint.com
-    ```
-
-!Plugin Settings
+- **LLM Type** Select LLM to use
+- **API Key** API Key for selected LLM
+- **Custom Endpoint** API endpoint if you're using a custom LLM
+- **Set Default Prompt**  Replace the default prompt with your own prompt for all further analysis.
 
 ### Custom Prompts
 
 1. **Select a code block** in JadX GUI.
 2. **Right-click** and choose **Analyze with xVision Plugin**.
-3. **Configure the analysis prompt** in the dialog that appears.
+3. **Check the Custom Prompt checkox** in the dialog that appears.
+4. Enter the custom prompt to use.
+
+>Note: The custom prompt will replace the default prompt
+
+
+## Thanks
+- [MartinKayJr](https://github.com/skylot/jadx/issues/1884#issue-1727047157) - Default prompt.
+
 
 ## Contributing
 
