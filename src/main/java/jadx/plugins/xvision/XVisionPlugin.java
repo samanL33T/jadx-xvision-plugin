@@ -132,13 +132,10 @@ public class XVisionPlugin implements JadxPlugin {
             llmCommunicator = new LLMCommunicator.GPT4Communicator(apiKey);
         } else if (selectedLLM.equals(XVisionConstants.CLAUDE_SERVICE)) {
             llmCommunicator = new LLMCommunicator.ClaudeCommunicator(apiKey);
-<<<<<<< HEAD
         } else if (selectedLLM.equals(XVisionConstants.DEEPSEEK_R1_SERVICE)) {
             llmCommunicator = new LLMCommunicator.DeepSeekR1Communicator(apiKey);
         } else if (selectedLLM.equals(XVisionConstants.DEEPSEEK_V3_SERVICE)) {
             llmCommunicator = new LLMCommunicator.DeepSeekV3Communicator(apiKey);
-=======
->>>>>>> origin/main
         } else if (selectedLLM.equals(XVisionConstants.CUSTOM_SERVICE)) {
             llmCommunicator = new LLMCommunicator.CustomLLMCommunicator(apiKey);
         }

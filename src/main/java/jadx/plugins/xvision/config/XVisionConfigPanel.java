@@ -37,11 +37,7 @@ public class XVisionConfigPanel extends JPanel {
         gbc.gridy = 0;
         add(llmLabel, gbc);
 
-<<<<<<< HEAD
         llmComboBox = new JComboBox<>(new String[]{XVisionConstants.GPT4_SERVICE, XVisionConstants.CLAUDE_SERVICE, XVisionConstants.DEEPSEEK_R1_SERVICE, XVisionConstants.DEEPSEEK_V3_SERVICE, XVisionConstants.CUSTOM_SERVICE});
-=======
-        llmComboBox = new JComboBox<>(new String[]{XVisionConstants.GPT4_SERVICE, XVisionConstants.CLAUDE_SERVICE, XVisionConstants.CUSTOM_SERVICE});
->>>>>>> origin/main
         llmComboBox.setFont(new Font("Dialog", Font.PLAIN, 14)); 
         llmComboBox.setPreferredSize(new Dimension(300, 30));
         llmComboBox.addItemListener(e -> {

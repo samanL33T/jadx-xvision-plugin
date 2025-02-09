@@ -121,9 +121,6 @@ public interface LLMCommunicator {
         }
     }
 
-<<<<<<< HEAD
-    // ... existing code ...
-
     class DeepSeekR1Communicator implements LLMCommunicator {
         private final String apiKey;
         private final HttpClient httpClient;
@@ -238,8 +235,6 @@ public interface LLMCommunicator {
         }
     }
 
-=======
->>>>>>> origin/main
     class CustomLLMCommunicator implements LLMCommunicator {
         private final String endpoint;
         private final HttpClient httpClient;
