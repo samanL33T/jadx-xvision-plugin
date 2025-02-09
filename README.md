@@ -14,7 +14,7 @@ xVision is a plugin for the [JadX](https://github.com/skylot/jadx) decompiler th
 ## Screenshots
 
 ![](screenshots/xVision_config.png "xVision Config")
-![](screenshots/xVision_Analyse_with_XVision.png "COntext menu optin - Analyze with xVision")
+![](screenshots/xVision_Analyse_with_XVision.png "Context menu option - Analyze with xVision")
 ![](screenshots/xVision_prompt_Box.png "xVision Analysis Prompt")
 ![](screenshots/xVision_Analysis_with_updated_code_rendering.png "xVision Analysis with code rendering")
 ![](screenshots/xVision_Analysis.png "xVision Analysis")
@@ -28,7 +28,7 @@ xVision is a plugin for the [JadX](https://github.com/skylot/jadx) decompiler th
 
 ### Download the jar file from releases
 
-- [jadX-xVision Plugin v1.0.0](https://github.com/samanl33t/jadx-xvision-plugin/releases/download/v1.0.0/jadx-xvision-plugin_v1.1.0.jar)
+- [jadX-xVision Plugin v1.1.0](https://github.com/samanl33t/jadx-xvision-plugin/releases/download/v1.0.0/jadx-xvision-plugin_v1.1.0.jar)
 
 ### Build locally
 
