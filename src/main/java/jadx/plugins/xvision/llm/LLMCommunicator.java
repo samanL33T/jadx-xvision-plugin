@@ -121,6 +121,125 @@ public interface LLMCommunicator {
         }
     }
 
+<<<<<<< HEAD
+    // ... existing code ...
+
+    class DeepSeekR1Communicator implements LLMCommunicator {
+        private final String apiKey;
+        private final HttpClient httpClient;
+    
+        public DeepSeekR1Communicator(String apiKey) {
+            this.apiKey = apiKey;
+            this.httpClient = HttpClients.createDefault();
+        }
+    
+        @Override
+        public String sendRequest(String prompt) throws IOException {
+            JsonObject requestBody = new JsonObject();
+            requestBody.addProperty("model", XVisionConstants.DEEPSEEK_R1_MODEL);
+            
+            JsonArray messages = new JsonArray();
+            JsonObject systemMessage = new JsonObject();
+            systemMessage.addProperty("role", "system");
+            systemMessage.addProperty("content", XVisionConstants.SYSTEM_CONTENT);
+            messages.add(systemMessage);
+    
+            JsonObject userMessage = new JsonObject();
+            userMessage.addProperty("role", "user");
+            userMessage.addProperty("content", prompt);
+            messages.add(userMessage);
+    
+            requestBody.add("messages", messages);
+            requestBody.addProperty("temperature", 0.7);
+            requestBody.addProperty("max_tokens", 4096);
+    
+            return sendDeepSeekRequest(requestBody);
+        }
+    
+        private String sendDeepSeekRequest(JsonObject requestBody) throws IOException {
+            HttpPost request = new HttpPost(XVisionConstants.DEEPSEEK_API_ENDPOINT);
+            request.setHeader("Content-Type", "application/json");
+            request.setHeader("Authorization", "Bearer " + apiKey);
+            request.setEntity(new StringEntity(requestBody.toString()));
+    
+            HttpResponse response = httpClient.execute(request);
+            int statusCode = response.getStatusLine().getStatusCode();
+    
+            if (statusCode != 200) {
+                throw new IOException("API request failed with status code: " + statusCode +
+                        "\nResponse: " + EntityUtils.toString(response.getEntity()));
+            }
+    
+            JsonObject jsonResponse = JsonParser.parseString(EntityUtils.toString(response.getEntity())).getAsJsonObject();
+            JsonArray choices = jsonResponse.getAsJsonArray("choices");
+            if (choices.size() > 0) {
+                JsonObject message = choices.get(0).getAsJsonObject().getAsJsonObject("message");
+                return message.get("content").getAsString();
+            } else {
+                throw new RuntimeException("No choices found in the response");
+            }
+        }
+    }
+    
+    class DeepSeekV3Communicator implements LLMCommunicator {
+        private final String apiKey;
+        private final HttpClient httpClient;
+    
+        public DeepSeekV3Communicator(String apiKey) {
+            this.apiKey = apiKey;
+            this.httpClient = HttpClients.createDefault();
+        }
+    
+        @Override
+        public String sendRequest(String prompt) throws IOException {
+            JsonObject requestBody = new JsonObject();
+            requestBody.addProperty("model", XVisionConstants.DEEPSEEK_V3_MODEL);
+            
+            JsonArray messages = new JsonArray();
+            JsonObject systemMessage = new JsonObject();
+            systemMessage.addProperty("role", "system");
+            systemMessage.addProperty("content", XVisionConstants.SYSTEM_CONTENT);
+            messages.add(systemMessage);
+    
+            JsonObject userMessage = new JsonObject();
+            userMessage.addProperty("role", "user");
+            userMessage.addProperty("content", prompt);
+            messages.add(userMessage);
+    
+            requestBody.add("messages", messages);
+            requestBody.addProperty("temperature", 0.7);
+            requestBody.addProperty("max_tokens", 4096);
+    
+            return sendDeepSeekRequest(requestBody);
+        }
+    
+        private String sendDeepSeekRequest(JsonObject requestBody) throws IOException {
+            HttpPost request = new HttpPost(XVisionConstants.DEEPSEEK_API_ENDPOINT);
+            request.setHeader("Content-Type", "application/json");
+            request.setHeader("Authorization", "Bearer " + apiKey);
+            request.setEntity(new StringEntity(requestBody.toString()));
+    
+            HttpResponse response = httpClient.execute(request);
+            int statusCode = response.getStatusLine().getStatusCode();
+    
+            if (statusCode != 200) {
+                throw new IOException("API request failed with status code: " + statusCode +
+                        "\nResponse: " + EntityUtils.toString(response.getEntity()));
+            }
+    
+            JsonObject jsonResponse = JsonParser.parseString(EntityUtils.toString(response.getEntity())).getAsJsonObject();
+            JsonArray choices = jsonResponse.getAsJsonArray("choices");
+            if (choices.size() > 0) {
+                JsonObject message = choices.get(0).getAsJsonObject().getAsJsonObject("message");
+                return message.get("content").getAsString();
+            } else {
+                throw new RuntimeException("No choices found in the response");
+            }
+        }
+    }
+
+=======
+>>>>>>> origin/main
     class CustomLLMCommunicator implements LLMCommunicator {
         private final String endpoint;
         private final HttpClient httpClient;

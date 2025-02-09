@@ -1,5 +1,11 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
+repositories {
+    mavenCentral()
+    maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots/")
+    google()
+}
+
 plugins {
     `java-library`
 
@@ -11,7 +17,7 @@ plugins {
 }
 
 dependencies {
-    val jadxVersion = "1.5.1-SNAPSHOT"
+    val jadxVersion = "1.5.2-SNAPSHOT"
     val isJadxSnapshot = jadxVersion.endsWith("-SNAPSHOT")
 
     compileOnly("io.github.skylot:jadx-core:$jadxVersion") {

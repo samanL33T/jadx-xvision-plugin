@@ -4,7 +4,11 @@ public final class XVisionConstants {
 
     public static final String PREF_DEFAULT_PROMPT = "defaultPrompt";
     public static final String GPT4_SERVICE = "GPT-4o";
+<<<<<<< HEAD
+    public static final String CLAUDE_SERVICE = "Claude-Sonnet-latest";
+=======
     public static final String CLAUDE_SERVICE = "Claude-Sonnet-3-5-20241022";
+>>>>>>> origin/main
     public static final String CUSTOM_SERVICE = "Custom";
 
     // API Endpoints
@@ -13,10 +17,28 @@ public final class XVisionConstants {
 
     // Model Names
     public static final String GPT4_MODEL = "gpt-4o";
+<<<<<<< HEAD
+    public static final String CLAUDE_MODEL = "claude-3-5-sonnet-latest";
+
+        // DeepSeek R1 Constants
+    public static final String DEEPSEEK_R1_SERVICE = "DeepSeek-R1";
+    public static final String DEEPSEEK_R1_MODEL = "deepseek-reasoner";
+
+    // DeepSeek V3 Constants
+    public static final String DEEPSEEK_V3_SERVICE = "DeepSeek-V3";
+    public static final String DEEPSEEK_V3_MODEL = "deepseek-chat";
+
+    // Common DeepSeek endpoint
+    public static final String DEEPSEEK_API_ENDPOINT = "https://api.deepseek.com/v1/chat/completions";
+
+    // System prompt
+    public static final String SYSTEM_CONTENT = "You are an expert Java Developer & Reverse Engineer.";
+=======
     public static final String CLAUDE_MODEL = "claude-3-5-sonnet-20241022";
 
     // System prompt
     public static final String SYSTEM_CONTENT = "You are a helpful assistant.";
+>>>>>>> origin/main
 
     public static final String PREF_SELECTED_LLM = "selectedLLM";
     public static final String PREF_API_KEY = "apiKey";
