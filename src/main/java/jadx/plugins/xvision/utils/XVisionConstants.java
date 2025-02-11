@@ -1,5 +1,7 @@
 package jadx.plugins.xvision.utils;
 
+import java.util.Locale;
+
 public final class XVisionConstants {
 
     public static final String PREF_DEFAULT_PROMPT = "defaultPrompt";
@@ -27,8 +29,8 @@ public final class XVisionConstants {
     public static final String DEEPSEEK_API_ENDPOINT = "https://api.deepseek.com/v1/chat/completions";
 
     // System prompt
-    public static final String SYSTEM_CONTENT = "You are an expert Java Developer & Reverse Engineer.";
-
+    private static final String SYSTEM_TEMPLATE = "You are an expert Java Developer & Reverse Engineer. Please communicate in the user's local language: %s (%s).";
+    public static final String SYSTEM_CONTENT = String.format(SYSTEM_TEMPLATE, Locale.getDefault().getLanguage(), Locale.getDefault().getCountry());
     public static final String PREF_SELECTED_LLM = "selectedLLM";
     public static final String PREF_API_KEY = "apiKey";
     public static final String PREF_CUSTOM_ENDPOINT = "customEndpoint";
@@ -40,7 +42,7 @@ public final class XVisionConstants {
 
     // Ref: https://github.com/skylot/jadx/issues/1884#issue-1727047157
     public static final String DEFAULT_PROMPT_TEMPLATE = """
-            Let the variable names and method names of the following code change as the name implies, the original meaning of the code cannot be changed, the order cannot be changed, and the unprocessed ones remain as they are, the number of lines of the code cannot be optimized, the code cannot be omitted, the code cannot be deleted or added, and the naming conflict cannot be allowed . The original name should be written above them in the form of a comment, keep the comment. Line comments must be added to Each line of code to explain the meaning of the code, and comments between multiple lines of code also need to be marked.
+            Let the variable names and method names of the following code change as the name implies, the original meaning of the code cannot be changed, the order cannot be changed, and the unprocessed ones remain as they are, the number of lines of the code cannot be optimized, the code cannot be omitted, the code cannot be deleted or added, and the naming conflict cannot be allowed. The original name should be written above them in the form of a comment, keep the comment. Line comments must be added to Each line of code to explain the meaning of the code, and comments between multiple lines of code also need to be marked. You should not modify the code content unless the user requests it.
             """;
 
     private XVisionConstants() {

@@ -12,6 +12,8 @@ public class XVisionConfigPanel extends JPanel {
     private JComboBox<String> llmComboBox;
     private JTextField apiKeyField;
     private JTextField customEndpointField;
+
+    private JTextField customModelField;
     private JTextArea defaultPromptArea;
     private JComboBox<String> llmTypeComboBox;
 
@@ -42,7 +44,9 @@ public class XVisionConfigPanel extends JPanel {
         llmComboBox.setPreferredSize(new Dimension(300, 30));
         llmComboBox.addItemListener(e -> {
             String selectedLLM = (String) llmComboBox.getSelectedItem();
-            customEndpointField.setEnabled(selectedLLM.equals(XVisionConstants.CUSTOM_SERVICE));
+            boolean enabled = selectedLLM.equals(XVisionConstants.CUSTOM_SERVICE);
+            customEndpointField.setEnabled(enabled);
+            customModelField.setEnabled(enabled);
         });
         gbc.gridx = 1;
         gbc.gridy = 0;
@@ -79,13 +83,31 @@ public class XVisionConfigPanel extends JPanel {
         gbc.gridx = 1;
         gbc.gridy = 2;
         gbc.fill = GridBagConstraints.HORIZONTAL;
+        customEndpointField.setEnabled(false);
         add(customEndpointField, gbc);
+
+        // Custom Model
+        JLabel customModelLabel = new JLabel("Model:");
+        customModelLabel.setFont(new Font("Dialog", Font.PLAIN, 14));
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.fill = GridBagConstraints.NONE;
+        add(customModelLabel, gbc);
+
+        customModelField = new JTextField();
+        customModelField.setFont(new Font("Dialog", Font.PLAIN, 14));
+        customModelField.setPreferredSize(new Dimension(300, 30));
+        gbc.gridx = 1;
+        gbc.gridy = 3;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        customModelField.setEnabled(false);
+        add(customModelField, gbc);
 
         // Default Prompt
         JLabel defaultPromptLabel = new JLabel("Set Default Prompt:");
         defaultPromptLabel.setFont(new Font("Dialog", Font.PLAIN, 14));
         gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy = 4;
         gbc.fill = GridBagConstraints.NONE;
         add(defaultPromptLabel, gbc);
 
@@ -125,7 +147,7 @@ public class XVisionConfigPanel extends JPanel {
         promptPanel.add(buttonPanel, BorderLayout.SOUTH);
         
         gbc.gridx = 1;
-        gbc.gridy = 3;
+        gbc.gridy = 4;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weighty = 1.0; 
         add(promptPanel, gbc);
@@ -135,18 +157,21 @@ public class XVisionConfigPanel extends JPanel {
         String selectedLLM = plugin.getSelectedLLM();
         String apiKey = plugin.getApiKey();
         String customEndpoint = plugin.getCustomEndpoint();
+        String customModel = plugin.getCustomModel();
         String defaultPrompt = plugin.getDefaultPrompt();
         defaultPromptArea.setText(defaultPrompt);
 
         llmComboBox.setSelectedItem(selectedLLM);
         apiKeyField.setText(apiKey);
         customEndpointField.setText(customEndpoint);
+        customModelField.setText(customModel);
     }
 
     public void savePreferences() {
         plugin.setSelectedLLM((String) llmComboBox.getSelectedItem());
         plugin.setApiKey(apiKeyField.getText());
         plugin.setCustomEndpoint(customEndpointField.getText());
+        plugin.setCustomModel(customModelField.getText());
         plugin.setDefaultPrompt(defaultPromptArea.getText()); 
         plugin.initializeLLMCommunicator();
     }
