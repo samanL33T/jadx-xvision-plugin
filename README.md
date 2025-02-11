@@ -6,7 +6,7 @@ xVision is a plugin for the [JadX](https://github.com/skylot/jadx) decompiler th
 
 ## Features
 
-- **LLM Integration**: Supports GPT-4 & Claude-sonnet-latest, DeepSeak V3 and R1 models
+- **LLM Integration**: Supports GPT-4 & Claude-sonnet-latest, DeepSeak V3 and R1 models. Responds in local language.
 - **Code Analysis**: Analyze Java code for functionality, security issues, and notable patterns.
 - **Custom Prompts**: Configure custom prompts for analysis.
 - **GUI Integration**: Integrates with JadX GUI for easy access.
