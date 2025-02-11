@@ -65,6 +65,7 @@ public class PreferencesManager {
     public static String getDefaultPrompt() {
         if (hasCustomDefaultPrompt()) {
             String prompt = getPreference(PREF_KEY_DEFAULT_PROMPT, XVisionConstants.DEFAULT_PROMPT_TEMPLATE);
+
             return prompt;
         }
         return XVisionConstants.DEFAULT_PROMPT_TEMPLATE;

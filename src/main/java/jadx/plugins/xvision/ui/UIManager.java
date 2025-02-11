@@ -3,14 +3,11 @@ package jadx.plugins.xvision.ui;
 import jadx.api.plugins.gui.JadxGuiContext;
 import jadx.plugins.xvision.XVisionPlugin;
 import jadx.plugins.xvision.config.ConfigWindow;
-import jadx.plugins.xvision.utils.XVisionConstants;
-import jadx.plugins.xvision.ui.XVisionContextMenuAction;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.util.prefs.Preferences;
 
 public class UIManager {
     private final XVisionPlugin plugin;
@@ -20,11 +17,32 @@ public class UIManager {
     }
 
     public void initializeGUIComponents(JadxGuiContext guiContext) {
-        guiContext.addMenuAction("XVision Config", () -> {
-            new ConfigWindow(plugin).show();
-        });
+        guiContext.addMenuAction("XVision Config", this::showConfigWindow);
 
         XVisionContextMenuAction.addToContextMenu(guiContext, plugin);
+    }
+
+    public void showConfigWindow() {
+        new ConfigWindow(plugin).show();
+    }
+
+    public JDialog getProcessingDialog(String msg) {
+        JDialog dialog = new JDialog((Frame)null, "Processing...", true);
+        dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        dialog.setSize(200, 100);
+        dialog.setLayout(new FlowLayout());
+
+        JLabel label = new JLabel(msg);
+        dialog.add(label);
+
+        JProgressBar progressBar = new JProgressBar();
+        progressBar.setIndeterminate(true);
+        dialog.add(progressBar, BorderLayout.CENTER);
+
+        dialog.setLocationRelativeTo(null);
+        dialog.setAlwaysOnTop(true);
+
+        return dialog;
     }
 
     public void showError(String message) {
@@ -71,6 +89,7 @@ public class UIManager {
         dialog.setContentPane(resultPanel);
         dialog.pack();
         dialog.setLocationRelativeTo(null);
+        dialog.setAlwaysOnTop(true);
         dialog.setVisible(true);
     }
 }

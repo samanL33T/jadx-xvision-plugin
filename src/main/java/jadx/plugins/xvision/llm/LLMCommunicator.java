@@ -237,18 +237,40 @@ public interface LLMCommunicator {
 
     class CustomLLMCommunicator implements LLMCommunicator {
         private final String endpoint;
+        private final String apiKey;
+        private final String model;
+
         private final HttpClient httpClient;
 
-        public CustomLLMCommunicator(String endpoint) {
+        public CustomLLMCommunicator(String endpoint, String apikey, String model) {
+            this.apiKey = apikey;
             this.endpoint = endpoint;
+            this.model = model;
             this.httpClient = HttpClients.createDefault();
         }
 
         @Override
         public String sendRequest(String prompt) throws IOException {
-            HttpPost request = new HttpPost(endpoint);
+            JsonObject requestBody = new JsonObject();
+            requestBody.addProperty("model", model);
+
+            JsonArray messages = new JsonArray();
+            JsonObject systemMessage = new JsonObject();
+            systemMessage.addProperty("role", "system");
+            systemMessage.addProperty("content", XVisionConstants.SYSTEM_CONTENT);
+            messages.add(systemMessage);
+
+            JsonObject userMessage = new JsonObject();
+            userMessage.addProperty("role", "user");
+            userMessage.addProperty("content", prompt);
+            messages.add(userMessage);
+
+            requestBody.add("messages", messages);
+
+            HttpPost request = new HttpPost(endpoint+"/chat/completions");
             request.setHeader("Content-Type", "application/json");
-            request.setEntity(new StringEntity("{\"prompt\": \"" + prompt + "\"}"));
+            request.setHeader("Authorization", "Bearer " + apiKey);
+            request.setEntity(new StringEntity(requestBody.toString()));
 
             HttpResponse response = httpClient.execute(request);
             int statusCode = response.getStatusLine().getStatusCode();
@@ -258,7 +280,14 @@ public interface LLMCommunicator {
                         "\nResponse: " + EntityUtils.toString(response.getEntity()));
             }
 
-            return EntityUtils.toString(response.getEntity());
+            JsonObject jsonResponse = JsonParser.parseString(EntityUtils.toString(response.getEntity())).getAsJsonObject();
+            JsonArray choices = jsonResponse.getAsJsonArray("choices");
+            if (choices.size() > 0) {
+                JsonObject message = choices.get(0).getAsJsonObject().getAsJsonObject("message");
+                return message.get("content").getAsString();
+            } else {
+                throw new RuntimeException("No choices found in the response: " + EntityUtils.toString(response.getEntity()));
+            }
         }
     }
 }
