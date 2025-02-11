@@ -189,7 +189,7 @@ public class XVisionPlugin implements JadxPlugin {
             }
         };
         worker.execute();
-        processing.setVisible(true); // 显示对话框
+        processing.setVisible(true);
     }
 
     private String sendLLMRequest(String prompt) throws IOException, InterruptedException {

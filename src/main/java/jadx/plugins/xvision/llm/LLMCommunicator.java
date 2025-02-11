@@ -288,20 +288,6 @@ public interface LLMCommunicator {
             } else {
                 throw new RuntimeException("No choices found in the response: " + EntityUtils.toString(response.getEntity()));
             }
-
-//            HttpPost request = new HttpPost(endpoint);
-//            request.setHeader("Content-Type", "application/json");
-//            request.setEntity(new StringEntity("{\"prompt\": \"" + prompt + "\"}"));
-//            System.out.println(request);
-//            HttpResponse response = httpClient.execute(request);
-//            int statusCode = response.getStatusLine().getStatusCode();
-//
-//            if (statusCode != 200) {
-//                throw new IOException("API request failed with status code: " + statusCode +
-//                        "\nResponse: " + EntityUtils.toString(response.getEntity()));
-//            }
-//
-//            return EntityUtils.toString(response.getEntity());
         }
     }
 }
