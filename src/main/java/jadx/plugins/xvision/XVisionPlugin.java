@@ -199,9 +199,6 @@ public class XVisionPlugin implements JadxPlugin {
     private String showPromptDialog(String code) {
         String defaultPrompt = getDefaultPrompt();
 
-        if (!defaultPrompt.contains("%s")) {
-            defaultPrompt = defaultPrompt + "\n\n%s";
-        }
         JPanel panel = new JPanel(new BorderLayout(5, 5));
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
@@ -268,12 +265,9 @@ public class XVisionPlugin implements JadxPlugin {
 
                 if (useCustomPromptCheckbox.isSelected()) {
                     customPrompt = customPromptArea.getText();
-                    if (!customPrompt.contains("%s")) {
-                        customPrompt = customPrompt + "\n\n%s";
-                    }
-                    return String.format(customPrompt, code);
+                    return String.format(customPrompt + "\n\n%s", code);
                 } else {
-                    return String.format(defaultPrompt, code);
+                    return String.format(defaultPrompt + "\n\n%s", code);
                 }
             }
             return null;
